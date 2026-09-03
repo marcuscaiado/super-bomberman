@@ -1,0 +1,244 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>💣 SUPER BOMBERMAN 💣 | Nopex Arcade</title>
+  <meta name="description" content="Jogue o clássico Super Bomberman (SNES) online no navegador a 60 FPS com batalhas de arena, bombas explosivas e suporte a controle!">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;800;900&family=Press+Start+2P&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      width: 100%;
+      height: 100%;
+      background: #000;
+      color: #fff;
+      overflow: hidden;
+      font-family: 'Outfit', sans-serif;
+    }
+
+    #game-holder {
+      width: 100%;
+      height: 100%;
+      max-width: 100%;
+      position: absolute;
+      inset: 0;
+    }
+
+    #game {
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Floating Header Overlay */
+    .floating-bar {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      right: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 10000;
+      pointer-events: none;
+    }
+
+    .floating-bar a,
+    .floating-bar button {
+      pointer-events: auto;
+    }
+
+    .pill-btn {
+      background: rgba(10, 16, 32, 0.88);
+      border: 1px solid #0070ec;
+      backdrop-filter: blur(10px);
+      padding: 6px 14px;
+      border-radius: 20px;
+      color: #00f5ff;
+      font-weight: 800;
+      font-size: 11px;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.7);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .pill-btn:hover {
+      background: #0070ec;
+      color: #fff;
+      box-shadow: 0 0 15px #0070ec;
+    }
+
+    .floating-title {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 11px;
+      color: #ffd32a;
+      background: rgba(10, 16, 32, 0.88);
+      border: 1px solid #ff4757;
+      backdrop-filter: blur(10px);
+      padding: 6px 14px;
+      border-radius: 20px;
+      text-shadow: 0 0 10px rgba(255, 211, 42, 0.6);
+    }
+
+    .floating-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Controls Modal */
+    #controls-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(4, 7, 20, 0.85);
+      backdrop-filter: blur(8px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 20000;
+    }
+
+    .modal-box {
+      background: #0b1329;
+      border: 2px solid #0070ec;
+      border-radius: 12px;
+      padding: 24px 30px;
+      max-width: 480px;
+      width: 90%;
+      box-shadow: 0 0 35px rgba(0, 112, 236, 0.4);
+    }
+
+    .modal-title {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 13px;
+      color: #ffd32a;
+      margin-bottom: 18px;
+      text-align: center;
+    }
+
+    .controls-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 20px;
+      font-size: 12px;
+    }
+
+    .ctrl-item {
+      background: rgba(255, 255, 255, 0.05);
+      padding: 8px 12px;
+      border-radius: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .key-badge {
+      background: #0070ec;
+      color: #fff;
+      font-weight: 900;
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    .modal-close-btn {
+      width: 100%;
+      background: #ff4757;
+      color: #fff;
+      font-weight: 900;
+      font-size: 13px;
+      padding: 10px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .modal-close-btn:hover {
+      background: #0070ec;
+      box-shadow: 0 0 15px #0070ec;
+    }
+
+    @media (max-width: 600px) {
+      .floating-title { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Floating Top Bar -->
+  <div class="floating-bar">
+    <a href="https://marcuscaiado.github.io/nopex-arcade/" class="pill-btn" title="Voltar ao Fliperama 3D">
+      ⬅️ FLIPERAMA
+    </a>
+    <div class="floating-title">SUPER BOMBERMAN</div>
+    <div class="floating-actions">
+      <button id="btn-controls" class="pill-btn" title="Ver Controles">🎮 Controles</button>
+      <button id="btn-fullscreen" class="pill-btn" title="Tela Cheia">🔲</button>
+    </div>
+  </div>
+
+  <!-- Direct Emulator Mounting Node -->
+  <div id="game-holder">
+    <div id="game"></div>
+  </div>
+
+  <!-- Controls Modal -->
+  <div id="controls-modal">
+    <div class="modal-box">
+      <div class="modal-title">💣 CONTROLES BOMBERMAN</div>
+      <div class="controls-grid">
+        <div class="ctrl-item"><span>Mover</span> <span class="key-badge">Setas / D-Pad</span></div>
+        <div class="ctrl-item"><span>Colocar Bomba</span> <span class="key-badge">Z (Botão B)</span></div>
+        <div class="ctrl-item"><span>Detonar / Habilidade</span> <span class="key-badge">X (Botão Y)</span></div>
+        <div class="ctrl-item"><span>Chutar Bomba</span> <span class="key-badge">A (Botão A)</span></div>
+        <div class="ctrl-item"><span>Pausar</span> <span class="key-badge">Enter (Start)</span></div>
+        <div class="ctrl-item"><span>Opções</span> <span class="key-badge">Shift (Select)</span></div>
+      </div>
+      <p style="font-size: 11px; color: #94a3b8; margin-bottom: 16px; text-align: center;">
+        💡 Controles touch virtuais no celular e controles USB/Bluetooth funcionam nativamente!
+      </p>
+      <button id="modal-close" class="modal-close-btn">FECHAR E JOGAR</button>
+    </div>
+  </div>
+
+  <script>
+    // Controls modal
+    const modal = document.getElementById('controls-modal');
+    document.getElementById('btn-controls').addEventListener('click', () => modal.style.display = 'flex');
+    document.getElementById('modal-close').addEventListener('click', () => modal.style.display = 'none');
+    modal.addEventListener('click', (e) => { if (e.target === modal) modal.style.display = 'none'; });
+
+    // Fullscreen
+    document.getElementById('btn-fullscreen').addEventListener('click', () => {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        document.exitFullscreen().catch(() => {});
+      }
+    });
+
+    // Autofocus canvas on click
+    window.addEventListener('click', () => {
+      const c = document.querySelector('canvas');
+      if (c) c.focus();
+    });
+
+    // EmulatorJS Engine Config
+    window.EJS_player = '#game';
+    window.EJS_core = 'snes';
+    window.EJS_gameName = 'Super Bomberman';
+    window.EJS_color = '#0070ec';
+    window.EJS_startOnLoaded = true;
+    window.EJS_pathtodata = 'https://cdn.emulatorjs.org/stable/data/';
+    window.EJS_gameUrl = 'roms/bomberman.sfc';
+  </script>
+  <script src="https://cdn.emulatorjs.org/stable/data/loader.js"></script>
+</body>
+</html>
